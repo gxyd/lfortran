@@ -3150,8 +3150,10 @@ public:
                                     throw SemanticAbort();
                                 }
                                 ASR::symbol_t* sym_ = current_scope->resolve_symbol(sym);
-                                if (!sym_ && compiler_options.implicit_typing && sa->m_attr != AST::simple_attributeType
-                                                        ::AttrExternal) {
+                                if (!sym_ && compiler_options.implicit_typing &&
+                                    sa->m_attr != AST::simple_attributeType::AttrExternal &&
+                                    sa->m_attr != AST::simple_attributeType::AttrPublic
+                                ) {
                                     ASR::expr_t* value = nullptr;
                                     if (sa->m_attr == AST::simple_attributeType::AttrParameter) {
                                         this->visit_expr(*s.m_initializer);
