@@ -438,7 +438,7 @@ jobs:
 
       - name: Test GFortran, Debug Build, Fortran, OpenMP, C/C++ backend, Upload Tarball, CPP Build, WASM - Test Fortran Backend
         shell: bash -e -l {0}
-        if: contains(matrix.os, 'ubuntu') && contains(matrix.llvm-version, '11')
+        if: (contains(matrix.os, 'ubuntu') && contains(matrix.llvm-version, '11')) || contains(matrix.os, 'macos')
         run: |
             cd integration_tests
             ./run_tests.py -b fortran -j1
