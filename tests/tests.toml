@@ -4680,5 +4680,9 @@ filename = "../integration_tests/intrinsics_334.f90"
 asr = true
 
 [[test]]
-filename = "class_abstract_type.f90"
-asr = true
+filename = "../integration_tests/volatile_02.f90"
+llvm = true
+
+[[test]]
+filename = "../integration_tests/volatile_03.f90"
+llvm = true

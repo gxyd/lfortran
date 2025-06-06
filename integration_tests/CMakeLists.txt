@@ -316,6 +316,9 @@ RUN(NAME use_02 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc c wasm fortran)
 RUN(NAME use_03 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc c wasm)
 
 RUN(NAME volatile_01 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc wasm)
+RUN(NAME volatile_02 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc wasm)
+RUN(NAME volatile_03 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc wasm)
+
 
 RUN(NAME cond_01 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc cpp x86 wasm c fortran)
 RUN(NAME cond_02 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc wasm c fortran)
@@ -1531,6 +1534,7 @@ RUN(NAME associate_13 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME associate_14 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME associate_15 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME associate_16 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
+RUN(NAME associate_17 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME attr_dim_01 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc fortran)
 RUN(NAME attr_dim_02 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc fortran)
 RUN(NAME attr_dim_03 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc fortran)
@@ -1726,6 +1730,7 @@ RUN(NAME class_33 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME class_34 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME class_35 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME class_36 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
+RUN(NAME class_37 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 
 RUN(NAME class_procedure_args_01 LABELS gfortran llvm)
 
@@ -2311,6 +2316,7 @@ RUN(NAME separate_compilation_09 LABELS gfortran llvm EXTRAFILES separate_compil
 RUN(NAME separate_compilation_10 LABELS gfortran llvm EXTRAFILES separate_compilation_10a.f90)
 RUN(NAME separate_compilation_11 LABELS gfortran llvm EXTRAFILES separate_compilation_11a.f90)
 RUN(NAME separate_compilation_12 LABELS gfortran llvm EXTRAFILES separate_compilation_12a.f90)
+RUN(NAME separate_compilation_13 LABELS gfortran llvm EXTRAFILES separate_compilation_13a.f90)
 
 
 
@@ -2324,6 +2330,7 @@ RUN(NAME formatted_read_01 LABELS gfortran llvm COPY_TO_BIN formatted_read_input
 
 
 
-# LFortran extensions (lists, dicts, etc.)
-RUN(NAME lp_list_test_01 LABELS llvm llvm_wasm llvm_wasm_emcc) # No gfortran
-RUN(NAME lp_set_test_01 LABELS llvm llvm_wasm llvm_wasm_emcc) # No gfortran
+# LFortran extensions (lists, dicts, etc.) 
+RUN(NAME lp_list_test_01 LABELS llvm llvm_wasm llvm_wasm_emcc) # No gfortran 
+RUN(NAME lp_list_of_lists_test LABELS llvm llvm_wasm llvm_wasm_emcc) # No gfortran 
+RUN(NAME lp_set_test_01 LABELS llvm llvm_wasm llvm_wasm_emcc) # No gfortran 

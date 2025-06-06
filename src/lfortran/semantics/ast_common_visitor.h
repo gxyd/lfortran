@@ -3165,7 +3165,7 @@ public:
                                         x.m_syms[i].m_name, nullptr, 0, ASR::intentType::Local,
                                         init_expr, init_expr_value, ASR::storage_typeType::Parameter,
                                         init_type, nullptr, ASR::abiType::Source, ASR::accessType::Public,
-                                        ASR::presenceType::Required, false));
+                                        ASR::presenceType::Required, false, false));
                                     current_scope->add_symbol(x.m_syms[i].m_name, sym);
                                     enum_init_val++;
                                 } else {
@@ -3437,6 +3437,7 @@ public:
                 bool contig_attr = false;
                 bool value_attr = false;
                 char *bindc_name = nullptr;
+                bool is_volatile = false;
                 AST::AttrType_t *sym_type =
                     AST::down_cast<AST::AttrType_t>(x.m_vartype);
                 bool is_char_type = sym_type->m_type == AST::decl_typeType::TypeCharacter;
@@ -3575,12 +3576,7 @@ public:
                             } else if(sa->m_attr == AST::simple_attributeType
                                 ::AttrNoPass) {
                             } else if (sa->m_attr == AST::simple_attributeType::AttrVolatile) {
-                                // TODO: Implement volatile attribute
-                                diag.add(Diagnostic(
-                                    "The volatile attribute is not implemented yet (https://github.com/lfortran/lfortran/issues/6555), ignoring for now",
-                                    Level::Warning, Stage::Semantic, {
-                                        Label("",{sa->base.base.loc})
-                                }));
+                                is_volatile = true;
                             } else {
                                 diag.add(Diagnostic(
                                     "Attribute type not implemented yet " + std::to_string(sa->m_attr),
@@ -3743,7 +3739,7 @@ public:
                                 s2c(al, to_lower(s.m_name)), variable_dependencies_vec.p,
                                 variable_dependencies_vec.size(), s_intent, init_expr, value,
                                 storage_type, type, type_declaration, s_abi, s_access, s_presence,
-                                value_attr, target_attr, contig_attr, bindc_name
+                                value_attr, target_attr, contig_attr, bindc_name, is_volatile
                             );
                             current_scope->add_symbol(sym, ASR::down_cast<ASR::symbol_t>(v));
                             variable_added_to_symtab = ASR::down_cast<ASR::Variable_t>(ASR::down_cast<ASR::symbol_t>(v));
@@ -4689,16 +4685,7 @@ public:
                 sym_type->m_type = AST::decl_typeType::TypeCharacter;
                 return determine_type(loc, sym, decl_attribute, is_pointer,
                     is_allocatable, dims, type_declaration, abi, is_argument);
-            } else if (startswith(derived_type_name, "_lfortran_")) {
-                // LFortran-specific intrinsics 
-
-                if (derived_type_name == "_lfortran_list_integer") 
-                    return ASRUtils::TYPE(ASR::make_List_t(al, loc, ASRUtils::TYPE(ASR::make_Integer_t(al, loc, 4)))); 
-                else if (derived_type_name == "_lfortran_list_real") 
-                    return ASRUtils::TYPE(ASR::make_List_t(al, loc, ASRUtils::TYPE(ASR::make_Real_t(al, loc, 4))));
-                else if (derived_type_name == "_lfortran_set_integer") 
-                    return ASRUtils::TYPE(ASR::make_Set_t(al, loc, ASRUtils::TYPE(ASR::make_Integer_t(al, loc, 4)))); 
-            }
+            } 
             ASR::symbol_t* v = current_scope->resolve_symbol(derived_type_name);
             if (v && ASR::is_a<ASR::Variable_t>(*v)
                   && ASR::is_a<ASR::TypeParameter_t>(*
@@ -4743,6 +4730,14 @@ public:
                         type));
                 }
             }
+        } else if (sym_type->m_type == AST::decl_typeType::TypeLF_List) {
+            return ASRUtils::TYPE(ASR::make_List_t(al, loc, determine_type(loc, sym, sym_type->m_attr,
+                    is_pointer, is_allocatable, dims, type_declaration, abi,
+                    is_argument))); 
+        }  else if (sym_type->m_type == AST::decl_typeType::TypeLF_Set) {
+            return ASRUtils::TYPE(ASR::make_Set_t(al, loc, determine_type(loc, sym, sym_type->m_attr,
+                    is_pointer, is_allocatable, dims, type_declaration, abi,
+                    is_argument))); 
         } else if (sym_type->m_type == AST::decl_typeType::TypeClass) {
             std::string derived_type_name;
             if( !sym_type->m_name ) {
