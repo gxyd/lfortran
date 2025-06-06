@@ -398,7 +398,7 @@ jobs:
       # Question: currently this is tested with LLVM version 11 - I think it should be 20?
       - name: Test GFortran, Debug Build, Fortran, OpenMP, C/C++ backend, Upload Tarball, CPP Build, WASM - Build Linux
         shell: bash -e -l {0}
-        if: contains(matrix.os, 'ubuntu') && contains(matrix.llvm-version, '11')
+        if: (contains(matrix.os, 'ubuntu') && contains(matrix.llvm-version, '11')) || contains(matrix.os, 'macos')
         run: |
             ./build0.sh
             export CXXFLAGS="-Werror"
