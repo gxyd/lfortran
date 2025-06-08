@@ -97,7 +97,7 @@ jobs:
         run: micromamba install kokkos
 
       - name: Install libunwind
-        if: contains(matrix.os, 'ubuntu') && (matrix.llvm-version != 11)
+        if: contains(matrix.os, 'ubuntu')
         run: micromamba install -y -n lf libunwind=1.7.2
 
       - name: Setup Platform
@@ -115,6 +115,7 @@ jobs:
             export CXXFLAGS="-Werror"
             export CFLAGS="-Werror"
             export WIN=0
+            export RUST_BACKTRACE=1
             shell ci/build.sh
 
       - name: Build (Windows)
