@@ -115,7 +115,7 @@ jobs:
             export CXXFLAGS="-Werror"
             export CFLAGS="-Werror"
             export WIN=0
-            export RUST_BACKTRACE=1
+            export RUST_BACKTRACE=full
             shell ci/build.sh
 
       - name: Build (Windows)
