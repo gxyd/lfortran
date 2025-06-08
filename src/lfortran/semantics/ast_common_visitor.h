@@ -3441,6 +3441,37 @@ public:
                 AST::AttrType_t *sym_type =
                     AST::down_cast<AST::AttrType_t>(x.m_vartype);
                 bool is_char_type = sym_type->m_type == AST::decl_typeType::TypeCharacter;
+               
+                bool is_allocatable = false;
+                for (size_t a = 0; a < x.n_attributes; a++) {
+                    AST::decl_attribute_t *attr = x.m_attributes[a];
+                    if (AST::is_a<AST::SimpleAttribute_t>(*attr)) {
+                        AST::SimpleAttribute_t *sa = AST::down_cast<AST::SimpleAttribute_t>(attr);
+                        if (sa->m_attr == AST::simple_attributeType::AttrAllocatable) {
+                            is_allocatable = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (is_char_type && sym_type->n_kind == ASR::string_length_kindType::DeferredLength &&  is_allocatable) {
+                    bool has_fixed_shape = false;
+                    for (size_t d = 0; d < s.n_dim; d++) {
+                        if (s.m_dim[d].m_end != nullptr && s.m_dim[d].m_end_star == 0) {
+                            has_fixed_shape = true;
+                            break;
+                        }
+                    }
+                    if (has_fixed_shape && s.n_dim > 0) {
+                        diag.add(Diagnostic(
+                            "Allocatable array '" + std::string(x.m_syms[0].m_name)
+                            + "' must have a deferred shape or assumed rank",
+                            Level::Error,Stage::Semantic,{ 
+                                Label("", { s.loc }) 
+                            }));
+                        throw SemanticAbort();
+                    }
+                }
                 if (assgnd_access.count(sym)) {
                     s_access = assgnd_access[sym];
                 }
@@ -3491,7 +3522,7 @@ public:
                 dims.reserve(al, 0);
                 // location for dimension(...) if present
                 Location dims_attr_loc;
-                bool is_allocatable = false;
+                is_allocatable = false;
                 if (x.n_attributes > 0) {
                     for (size_t i=0; i < x.n_attributes; i++) {
                         AST::decl_attribute_t *a = x.m_attributes[i];
@@ -4685,7 +4716,14 @@ public:
                 sym_type->m_type = AST::decl_typeType::TypeCharacter;
                 return determine_type(loc, sym, decl_attribute, is_pointer,
                     is_allocatable, dims, type_declaration, abi, is_argument);
-            } 
+            }  else if (derived_type_name == "_lfortran_test_dict") {
+                return ASRUtils::TYPE(ASR::make_Dict_t(al, loc, ASRUtils::TYPE(ASR::make_Integer_t(al, loc, 4)),
+                                                       ASRUtils::TYPE(ASR::make_Integer_t(al, loc, 4)))); 
+            } else if (derived_type_name == "_lfortran_test_dict_r") {
+                return ASRUtils::TYPE(ASR::make_Dict_t(al, loc, ASRUtils::TYPE(ASR::make_Integer_t(al, loc, 4)),
+                                                       ASRUtils::TYPE(ASR::make_Real_t(al, loc, 4)))); 
+            }
+
             ASR::symbol_t* v = current_scope->resolve_symbol(derived_type_name);
             if (v && ASR::is_a<ASR::Variable_t>(*v)
                   && ASR::is_a<ASR::TypeParameter_t>(*
@@ -4865,8 +4903,8 @@ public:
     }
 
     int get_based_indexing(ASR::symbol_t* v) {
-        if (v != nullptr && ASR::is_a<ASR::Variable_t>(*v)) {
-            ASR::Variable_t* var = ASR::down_cast<ASR::Variable_t>(v);
+        if (v != nullptr && ASR::is_a<ASR::Variable_t>(*ASRUtils::symbol_get_past_external(v))) {
+            ASR::Variable_t* var = ASR::down_cast<ASR::Variable_t>(ASRUtils::symbol_get_past_external(v));
             if (ASRUtils::is_array(var->m_type) && var->m_value && var->m_storage == ASR::storage_typeType::Parameter) {
                 ASR::Array_t* arr = ASR::down_cast<ASR::Array_t>(var->m_type);
                 for (size_t i = 0; i < arr->n_dims; i++) {
@@ -7247,6 +7285,9 @@ public:
         else if (ASR::is_a<ASR::Set_t>(*ASRUtils::expr_type(arg)))
             return ASR::make_SetLen_t(al, x.base.base.loc, arg, 
                                  ASRUtils::TYPE(ASR::make_Integer_t(al, x.base.base.loc, 4)), nullptr);
+        else if (ASR::is_a<ASR::Dict_t>(*ASRUtils::expr_type(arg)))
+            return ASR::make_DictLen_t(al, x.base.base.loc, arg, 
+                                 ASRUtils::TYPE(ASR::make_Integer_t(al, x.base.base.loc, 4)), nullptr);
         else {
             std::string arg_type_str = ASRUtils::type_to_str_fortran(ASRUtils::expr_type(arg));
             diag.add(Diagnostic("Argument of type '" + arg_type_str + "' for _lfortran_len has not been implemented yet",
@@ -7280,6 +7321,23 @@ public:
             }
             return ASR::make_ListItem_t(al, x.base.base.loc, args[0], args[1],
                                         ASRUtils::get_contained_type(ASRUtils::expr_type(args[0])), nullptr);
+        } else if (ASR::is_a<ASR::Dict_t>(*ASRUtils::expr_type(args[0]))) {
+            ASR::Dict_t* dict_type = ASR::down_cast<ASR::Dict_t>(ASRUtils::expr_type(args[0]));
+            ASR::ttype_t* key_type = dict_type->m_key_type;
+            if (!ASRUtils::check_equal_type(ASRUtils::expr_type(args[1]), key_type)) {
+                std::string contained_type_str = ASRUtils::type_to_str_fortran(key_type);
+                std::string arg_type_str = ASRUtils::type_to_str_fortran(ASRUtils::expr_type(args[1]));
+                diag.add(Diagnostic(
+                    "Type mismatch in '_lfortran_get_item', the key types must be compatible",
+                    Level::Error, Stage::Semantic, {
+                        Label("Types mismatch (found '" + 
+                        arg_type_str + "', expected '" + contained_type_str +  "')",{x.base.base.loc})
+                    }));
+                throw SemanticAbort();
+            }
+            /*return ASR::make_ListItem_t(al, x.base.base.loc, args[0], args[1],*/
+            /*                            ASRUtils::get_contained_type(ASRUtils::expr_type(args[0])), nullptr);*/
+            return ASR::make_DictItem_t(al, x.base.base.loc, args[0], args[1], nullptr, dict_type->m_value_type, nullptr);
         } else {
             std::string arg_type_str = ASRUtils::type_to_str_fortran(ASRUtils::expr_type(args[0]));
             diag.add(Diagnostic("Argument of type '" + arg_type_str + "' for _lfortran_get_item has not been implemented yet",
@@ -7419,6 +7477,70 @@ public:
 
         return ASR::make_SetConstant_t(al, x.base.base.loc, args.p, args.n, 
                                         ASRUtils::TYPE(ASR::make_Set_t(al, x.base.base.loc, contained_type)));
+    }
+    
+    ASR::asr_t* create_DictConstant(const AST::FuncCallOrArray_t& x) {
+        if (x.n_keywords > 0) {
+            diag.add(Diagnostic("_lfortran_dict_constant expects no keyword arguments",
+                                Level::Error, Stage::Semantic, {Label("", {x.base.base.loc})}));
+            throw SemanticAbort();
+        }
+
+        if (x.n_args == 0) {
+            diag.add(Diagnostic("As of now _lfortran_dict_constant expects atleast two argument",
+                                Level::Error, Stage::Semantic, {Label("", {x.base.base.loc})}));
+            throw SemanticAbort();
+        }
+
+        if (x.n_args % 2 == 1) {
+            diag.add(Diagnostic("As of now _lfortran_dict_constant expects and even number of arguments",
+                                Level::Error, Stage::Semantic, {Label("", {x.base.base.loc})}));
+            throw SemanticAbort();
+        }
+
+            
+        
+        AST::expr_t* source = nullptr;
+        std::pair<ASR::ttype_t*, ASR::ttype_t*> type = {nullptr, nullptr};
+        Vec<ASR::expr_t *> keys;
+        keys.reserve(al, 1);
+        
+        Vec<ASR::expr_t *> values;
+        values.reserve(al, 1);
+
+        for (size_t i=0;i<x.n_args;i++) {
+            ASR::ttype_t *contained_type = i%2 == 0? type.first : type.second;
+
+            source = x.m_args[i].m_end;
+            this->visit_expr(*source);
+            ASR::expr_t* arg = ASRUtils::EXPR(tmp);
+            if (i%2 == 0)
+                keys.push_back(al, arg);
+            else 
+                values.push_back(al, arg);
+            ASR::ttype_t *arg_type = ASRUtils::expr_type(arg);
+
+
+            if (contained_type && !ASRUtils::check_equal_type(contained_type, arg_type)) {
+                std::string contained_type_str = ASRUtils::type_to_str_fortran(contained_type);
+                std::string arg_type_str = ASRUtils::type_to_str_fortran(arg_type);
+                diag.add(Diagnostic(
+                    "Type mismatch in _lfortran_list_constant, the types must be compatible",
+                    Level::Error, Stage::Semantic, {
+                        Label("Types mismatch (found '" + 
+                    arg_type_str + "', expected '" + contained_type_str +  "')",{arg->base.loc})
+                    }));
+                throw SemanticAbort();
+            } else if (!contained_type) {
+                contained_type = arg_type;
+                if (i%2 == 0) type.first = arg_type;
+                else type.second = arg_type;
+            }
+        }
+
+
+        return ASR::make_DictConstant_t(al, x.base.base.loc, keys.p, keys.n, values.p, values.n, ASRUtils::TYPE(
+            ASR::make_Dict_t(al, x.base.base.loc, type.first, type.second)));
     }
 
     ASR::asr_t* create_BitCast(const AST::FuncCallOrArray_t& x) {
@@ -8243,6 +8365,8 @@ public:
                     tmp = create_ListCount(x);
                 else if ( var_name == "_lfortran_set_constant")
                     tmp = create_SetConstant(x);
+                else if ( var_name == "_lfortran_dict_constant")
+                    tmp = create_DictConstant(x);
             } else {
                 throw LCompilersException("create_" + var_name + " not implemented yet.");
             }

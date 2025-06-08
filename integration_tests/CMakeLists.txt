@@ -1731,6 +1731,13 @@ RUN(NAME class_34 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME class_35 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME class_36 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME class_37 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
+RUN(NAME class_38 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
+RUN(NAME class_39 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
+RUN(NAME class_40 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
+RUN(NAME class_41 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
+RUN(NAME class_42 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
+RUN(NAME class_43 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
+RUN(NAME class_44 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 
 RUN(NAME class_procedure_args_01 LABELS gfortran llvm)
 
@@ -2045,6 +2052,7 @@ RUN(NAME character_08 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc fortran)
 RUN(NAME character_09 LABELS gfortran llvm fortran)
 RUN(NAME char_array_01 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME char_array_indexing LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
+RUN(NAME char_array_indexing_02 LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME character_parameter_padding_trimming LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 RUN(NAME character_array_parameter_padding_trimming LABELS gfortran llvm llvm_wasm llvm_wasm_emcc)
 
@@ -2260,6 +2268,9 @@ RUN(NAME openmp_40 LABELS llvm_omp llvm)
 RUN(NAME openmp_41 LABELS llvm_omp llvm)
 RUN(NAME openmp_42 LABELS llvm_omp llvm)
 RUN(NAME openmp_43 LABELS llvm_omp llvm)
+RUN(NAME openmp_44 LABELS llvm_omp  gfortran GFORTRAN_ARGS -fopenmp)
+RUN(NAME openmp_45 LABELS llvm_omp  gfortran GFORTRAN_ARGS -fopenmp)
+RUN(NAME openmp_47 LABELS llvm_omp  gfortran GFORTRAN_ARGS -fopenmp)
 
 RUN(NAME nullify_01 LABELS gfortran fortran llvm)
 RUN(NAME nullify_02 LABELS gfortran fortran llvm)
@@ -2334,3 +2345,4 @@ RUN(NAME formatted_read_01 LABELS gfortran llvm COPY_TO_BIN formatted_read_input
 RUN(NAME lp_list_test_01 LABELS llvm llvm_wasm llvm_wasm_emcc) # No gfortran 
 RUN(NAME lp_list_of_lists_test LABELS llvm llvm_wasm llvm_wasm_emcc) # No gfortran 
 RUN(NAME lp_set_test_01 LABELS llvm llvm_wasm llvm_wasm_emcc) # No gfortran 
+RUN(NAME lp_dict_test_01 LABELS llvm llvm_wasm llvm_wasm_emcc) # No gfortran 
