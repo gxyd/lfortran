@@ -90,11 +90,11 @@ jobs:
         shell: bash -e -l {0}
         run: micromamba install bison=3.4 openmpi=5.0.6 openblas=0.3.21 llvm-openmp=14.0.4 nodejs=18.20.4 pandoc=3.1.13
 
-      - name: Install Linux Packages
-        if: contains(matrix.os, 'ubuntu')
-        shell: bash -e -l {0}
-        # we probably need to explicitly specify the different versions on with LLVM 11 and LLVM 20 both
-        run: micromamba install kokkos
+      # - name: Install Linux Packages
+      #   if: contains(matrix.os, 'ubuntu')
+      #   shell: bash -e -l {0}
+      #   # we probably need to explicitly specify the different versions on with LLVM 11 and LLVM 20 both
+      #   run: micromamba install kokkos
 
       - name: Install libunwind
         if: contains(matrix.os, 'ubuntu')
