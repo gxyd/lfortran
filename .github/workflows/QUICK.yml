@@ -114,9 +114,7 @@ jobs:
         run: |
             export CXXFLAGS="-Werror"
             export CFLAGS="-Werror"
-            export WIN=0
-            export RUST_BACKTRACE=full
-            shell ci/build.sh
+            xonsh ci/build.xsh
 
       - name: Build (Windows)
         if: contains(matrix.os, 'windows')
