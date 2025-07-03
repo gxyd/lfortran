@@ -835,6 +835,7 @@ time_section "🧪 Testing SNAP" '
     git checkout lf11
     git checkout 169a9216f2c922e94065a519efbb0a6c8b55149e
     cd ./src
+
     make -j8 FORTRAN=$FC FFLAGS= MPI=no OPENMP=no
     ./gsnap ../qasnap/sample/inp out
 
@@ -845,6 +846,24 @@ time_section "🧪 Testing SNAP" '
     make clean
     make -j8 FORTRAN=$FC FFLAGS="--fast" MPI=no OPENMP=no
     ./gsnap ../qasnap/sample/inp out
+
+    if [[ $LFORTRAN_RUN_EXHAUSTIVE_TESTS == 1 ]]; then
+      make clean
+      make -j8 FORTRAN=$FC FFLAGS="--std=f23" MPI=no OPENMP=no
+      ./gsnap ../qasnap/sample/inp out
+
+      make clean
+      make -j8 FORTRAN=$FC FFLAGS="--generate-object-code --std=f23" MPI=no OPENMP=no
+      ./gsnap ../qasnap/sample/inp out
+
+      make clean
+      make -j8 FORTRAN=$FC FFLAGS="--fast --std=f23" MPI=no OPENMP=no
+      ./gsnap ../qasnap/sample/inp out
+    fi
+
+    print_success "Done with SNAP"
+    cd ../..
+    rm -rf SNAP
 '
 
 

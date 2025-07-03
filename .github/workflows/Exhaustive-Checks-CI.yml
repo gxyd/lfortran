@@ -385,6 +385,7 @@ jobs:
         shell: bash -e -x -l {0}
         run: |
             export PATH="$(pwd)/src/bin:$PATH"
+            export LFORTRAN_RUN_EXHAUSTIVE_TESTS=1  # enable exhaustive checks (e.g., --std=f23) for CI
             RUNNER_OS="${{matrix.os}}" FC=lfortran ci/test_third_party_codes.sh
 
   upload_tarball:
